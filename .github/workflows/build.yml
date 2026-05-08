@@ -38,11 +38,21 @@ jobs:
           cd flipperzero-firmware
           python3 ./fbt fap_dolphin_tamagotchi
       
+      - name: Check if FAP exists
+        run: |
+          if [ -f "flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap" ]; then
+            echo "✅ FAP file created successfully!"
+            ls -lh flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap
+          else
+            echo "⚠️ FAP not found in Games folder, checking other locations..."
+            find flipperzero-firmware/build -name "*.fap" -type f
+          fi
+      
       - name: Upload FAP artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dolphin_tamagotchi.fap
-          path: flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap
+          name: dolphin_tamagotchi
+          path: flipperzero-firmware/build/apps/Games/
           retention-days: 30
       
       - name: Create Release
