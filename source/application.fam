@@ -1,0 +1,14 @@
+App(
+    appid="dolphin_tamagotchi",
+    name="Dolphin Tamagotchi",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="dolphin_tamagotchi_app",
+    cdefines=["APP_DOLPHIN_TAMAGOTCHI"],
+    requires=["gui", "furi", "storage"],
+    sources=["dolphin_tamagotchi.c"],
+    order=40,
+    category="Games",
+    icon="A_Plugins_14",
+    author="Tamagotchi Dev",
+    description="Raise and evolve your own digital Flipper Dolphin with mini-games and progression!",
+)
