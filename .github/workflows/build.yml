@@ -86,3 +86,4 @@ jobs:
           asset_path: flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap
           asset_name: dolphin_tamagotchi.fap
           asset_content_type: application/octet-stream
+          
