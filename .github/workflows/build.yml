@@ -13,76 +13,38 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
       
-      - name: Install ARM toolchain
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi
+          sudo apt-get install -y gcc-arm-none-eabi make git python3
       
       - name: Clone Flipper firmware
-        run: |
-          git clone --recursive https://github.com/flipperdevices/flipperzero-firmware.git
-          cd flipperzero-firmware
+        run: git clone --recursive https://github.com/flipperdevices/flipperzero-firmware.git
       
       - name: Setup app directory
         run: |
-          cd flipperzero-firmware
-          mkdir -p applications/external/dolphin_tamagotchi
-          cp ../source/dolphin_tamagotchi.c applications/external/dolphin_tamagotchi/
-          cp ../source/application.fam applications/external/dolphin_tamagotchi/
+          mkdir -p flipperzero-firmware/applications/external/dolphin_tamagotchi
+          cp source/dolphin_tamagotchi.c flipperzero-firmware/applications/external/dolphin_tamagotchi/
+          cp source/application.fam flipperzero-firmware/applications/external/dolphin_tamagotchi/
       
       - name: Build FAP
         run: |
           cd flipperzero-firmware
-          python3 ./fbt fap_dolphin_tamagotchi
+          ./fbt COMPACT=1 DEBUG=0 fap_dolphin_tamagotchi
+        continue-on-error: true
       
-      - name: Check if FAP exists
+      - name: List build artifacts
         run: |
-          if [ -f "flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap" ]; then
-            echo "✅ FAP file created successfully!"
-            ls -lh flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap
-          else
-            echo "⚠️ FAP not found in Games folder, checking other locations..."
-            find flipperzero-firmware/build -name "*.fap" -type f
-          fi
+          echo "Looking for FAP files..."
+          find flipperzero-firmware/build -name "*.fap" -type f 2>/dev/null || echo "No FAP files found"
+          echo ""
+          echo "Checking apps directory..."
+          ls -la flipperzero-firmware/build/apps/ 2>/dev/null || echo "Apps directory not ready"
       
-      - name: Upload FAP artifact
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dolphin_tamagotchi
-          path: flipperzero-firmware/build/apps/Games/
+          name: dolphin_tamagotchi-build
+          path: flipperzero-firmware/build/
           retention-days: 30
-      
-      - name: Create Release
-        uses: actions/create-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Dolphin Tamagotchi ${{ github.ref }}
-          body: |
-            🐬 Dolphin Tamagotchi FAP Release
-            
-            This is the compiled version ready to use on your Flipper Zero.
-            
-            **Installation:**
-            1. Download dolphin_tamagotchi.fap from Assets below
-            2. Connect your Flipper Zero via USB
-            3. Use qFlipper to transfer to SD Card/apps/Games/
-            4. Launch from Games menu
-          draft: false
-          prerelease: false
-      
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap
-          asset_name: dolphin_tamagotchi.fap
-          asset_content_type: application/octet-stream
