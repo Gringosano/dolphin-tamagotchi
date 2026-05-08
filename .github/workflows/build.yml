@@ -30,8 +30,8 @@ jobs:
         run: |
           cd flipperzero-firmware
           mkdir -p applications/external/dolphin_tamagotchi
-          cp ../dolphin_tamagotchi.c applications/external/dolphin_tamagotchi/
-          cp ../application.fam applications/external/dolphin_tamagotchi/
+          cp ../source/dolphin_tamagotchi.c applications/external/dolphin_tamagotchi/
+          cp ../source/application.fam applications/external/dolphin_tamagotchi/
       
       - name: Build FAP
         run: |
