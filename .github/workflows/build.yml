@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       
@@ -39,10 +39,11 @@ jobs:
           python3 ./fbt fap_dolphin_tamagotchi
       
       - name: Upload FAP artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dolphin_tamagotchi.fap
           path: flipperzero-firmware/build/apps/Games/dolphin_tamagotchi.fap
+          retention-days: 30
       
       - name: Create Release
         uses: actions/create-release@v1
@@ -58,7 +59,7 @@ jobs:
             This is the compiled version ready to use on your Flipper Zero.
             
             **Installation:**
-            1. Download dolphin_tamagotchi.fap
+            1. Download dolphin_tamagotchi.fap from Assets below
             2. Connect your Flipper Zero via USB
             3. Use qFlipper to transfer to SD Card/apps/Games/
             4. Launch from Games menu
