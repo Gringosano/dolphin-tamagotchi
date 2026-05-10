@@ -1,0 +1,13 @@
+App(
+    appid="dolphin_tamagotchi",
+    name="Dolphin Tamagotchi",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="dolphin_tamagotchi_app",
+    requires=["gui"],
+    stack_size=2 * 1024,
+    fap_author="Albert Gringosano",
+    fap_version="1.0",
+    fap_description="A Tamagotchi-style virtual pet starring Flipper's dolphin.",
+    fap_category="Games",
+    fap_icon="icon.png",
+)
