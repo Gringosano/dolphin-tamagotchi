@@ -1,1 +1,82 @@
 
+# =============================================================================
+# .github/workflows/build.yml
+# Author / Digital Signature: Albert Gringosano
+# Project: dolphin_tamagotchi
+# =============================================================================
+
+name: Build Dolphin Tamagotchi FAP
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Build dolphin_tamagotchi — Albert Gringosano"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Clone Flipper Zero firmware
+        run: |
+          git clone --depth=1 --branch dev \
+            https://github.com/flipperdevices/flipperzero-firmware.git fw
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            python3 python3-pip git rsync
+
+      - name: Make fbt executable
+        run: chmod +x fw/fbt
+
+      - name: Sync app source into firmware tree
+        run: |
+          mkdir -p fw/applications_user/dolphin_tamagotchi
+          rsync -av --delete source/ fw/applications_user/dolphin_tamagotchi/
+
+      - name: Build FAP
+        working-directory: fw
+        run: |
+          set -o pipefail
+          ./fbt fap_dolphin_tamagotchi 2>&1 | tee ../output/build.log
+
+      - name: Collect .fap artifact
+        run: |
+          mkdir -p output
+          FAP=$(find fw -name "dolphin_tamagotchi.fap" 2>/dev/null | head -n 1)
+          if [ -z "$FAP" ]; then
+            echo "::error::dolphin_tamagotchi.fap not found after build."
+            exit 1
+          fi
+          cp "$FAP" output/
+          echo "Artifact: $FAP"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dolphin_tamagotchi-${{ github.sha }}
+          path: |
+            output/dolphin_tamagotchi.fap
+            output/build.log
+          retention-days: 30
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **App** | dolphin_tamagotchi |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Author** | Albert Gringosano |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
